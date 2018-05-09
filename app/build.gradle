@@ -1,6 +1,21 @@
+import java.text.SimpleDateFormat
+
+// 加载插件 打不同的包 需要不同的插件 比如：
+// 打 apk 需要打apk的插件 打lib需要打lib的插件
 apply plugin: 'com.android.application'
 
 android {
+    signingConfigs {
+        // 名字为release的打包签名配置 可以随便取名字
+        // 后面在buildtype中可以引用
+        release {
+            keyAlias "demo"
+            keyPassword "123456"
+            storeFile file("D:\\android_demo\\demo.jks")
+            storePassword "123456"
+        }
+    }
+
     compileSdkVersion 27
     defaultConfig {
         applicationId "com.world.helllo.android_demo"
@@ -11,14 +26,63 @@ android {
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
     }
     buildTypes {
+        debug {
+            // 给自动的生成的BuildConfig java类中
+            // 添加一个Boolean类型的API_ENV属性
+            buildConfigField "boolean", "API_ENV", "true"
+        }
         release {
+            // 指定使用的签名配置是signingConfigs.release
+            signingConfig signingConfigs.release
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
         }
     }
+
+    //配置多版本的apk 多渠道打包的时候用比较的好用
+//    productFlavors{
+//        Offline{
+//            applicationId "com.xxxx.xxxx.beta"
+//            manifestPlaceholders = [app_name:"xxxx" ,icon: "@mipmap/ic_launcher_xxxx"]
+//            resValue("string" , "baseUrl","xxxxxxx")
+//        }
+//        Online{
+//            applicationId "com.xxxx.xxxx.online"
+//            manifestPlaceholders = [app_name:"xxxx" ,icon: "@mipmap/ic_launcher_xxxx"]
+//            resValue("string" , "baseUrl","xxxxxxx")
+//        }
+
+    // 打包后应用名称
+    applicationVariants.all { variant ->
+        variant.outputs.all { output ->
+            def outputFile = output.outputFile
+            def fileName
+            if (outputFile != null && outputFile.name.endsWith('.apk')) {
+                if (variant.buildType.name.equals('release')) {
+                    fileName = "android_demo_Release${defaultConfig.versionName}.${getTime()}.apk"
+                } else if (variant.buildType.name.equals('debug')) {
+                    fileName = "android_demo_Debug_${democonfig.version}_${defaultConfig.versionName}.${getTime()}.apk"
+                }
+                // 注意3.0之后有所变化
+                // output.outputFile = new File(outputFile.parent, fileName)
+                outputFileName = fileName
+            }
+        }
+    }
+}
+
+def getTime() {
+    Date date = new Date()
+    SimpleDateFormat sf = new SimpleDateFormat("yyyy-MM-dd HH_mm_ss");
+    sf.format(date)
 }
 
 dependencies {
+    // 内存泄漏检测
+    debugCompile 'com.squareup.leakcanary:leakcanary-android:1.5'
+    releaseCompile 'com.squareup.leakcanary:leakcanary-android-no-op:1.5'
+    testCompile 'com.squareup.leakcanary:leakcanary-android-no-op:1.5'
+
     implementation 'io.reactivex.rxjava2:rxandroid:2.0.2'
     implementation fileTree(dir: 'libs', include: ['*.jar'])
     implementation 'com.android.support:appcompat-v7:27.1.1'
