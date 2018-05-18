@@ -10,16 +10,19 @@ import android.view.View;
 import android.widget.Button;
 
 public class AudioRecordActivity extends AppCompatActivity implements View.OnClickListener {
+    private final static String TAG = AudioRecordActivity.class.getSimpleName();
 
     private Button btnswi;
 
     private AudioRecord audioRecord;
 
     private int audioSource = MediaRecorder.AudioSource.MIC;
+
     private int sampleRateInHz = 16000;
 
     // AudioFormat.CHANNEL_CONFIGURATION_STEREO 双通道
     private int channelConfig = AudioFormat.CHANNEL_IN_MONO;// 单通道
+//    private int channelConfig = AudioFormat.CHANNEL_CONFIGURATION_STEREO;// 单通道
 
     // AudioFormat.ENCODING_PCM_8BIT
     private int audioFormat = AudioFormat.ENCODING_PCM_16BIT;
@@ -49,6 +52,7 @@ public class AudioRecordActivity extends AppCompatActivity implements View.OnCli
         if (!isOpen) {
             if (null == audioRecord) {
                 int sysMinBufferSize = AudioRecord.getMinBufferSize(sampleRateInHz, channelConfig, audioFormat);
+                Log.i(TAG, "sysMinBufferSize: " + sysMinBufferSize);
 
                 // 注意bufferSizeInBytes 不能低于系统要求的阈值
                 bufferSizeInBytes = bufferSizeInBytes <= sysMinBufferSize ? sysMinBufferSize : bufferSizeInBytes;
@@ -87,11 +91,18 @@ public class AudioRecordActivity extends AppCompatActivity implements View.OnCli
             byte[] buffer = new byte[bufferSizeInBytes];
             short[] shortBuffer = new short[bufferSizeInBytes];
             while (!terminate) {
-                long shortlength = audioRecord.read(shortBuffer, 0, buffer.length);
-                Log.i("AAAA", "bufferSizeInBytes: " + bufferSizeInBytes + " read shortlength: " + shortlength * 2);
+
+                long shortlength = audioRecord.read(shortBuffer, 0, shortBuffer.length);
+                Log.i(TAG, "bufferSizeInBytes: " + bufferSizeInBytes + " read shortlength: " + shortlength * 2);
+
 
                 long bytelength = audioRecord.read(buffer, 0, buffer.length);
-                Log.i("AAAA", "bufferSizeInBytes: " + bufferSizeInBytes + " read bytelength: " + bytelength);
+                Log.i(TAG, "bufferSizeInBytes: " + bufferSizeInBytes + " read bytelength: " + bytelength);
+
+
+                Log.i(TAG, "3000 shortBuffer: "+shortBuffer[3000]);
+                Log.i(TAG, "3001 shortBuffer: "+shortBuffer[3001]);
+
             }
         }
     }

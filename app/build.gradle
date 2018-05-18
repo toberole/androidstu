@@ -34,7 +34,8 @@ android {
         release {
             // 指定使用的签名配置是signingConfigs.release
             signingConfig signingConfigs.release
-            minifyEnabled false
+            minifyEnabled false // 打开混淆
+            // shrinkResources true // 资源压缩
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
         }
     }
@@ -65,7 +66,7 @@ android {
                 }
                 // 注意3.0之后有所变化
                 // output.outputFile = new File(outputFile.parent, fileName)
-                outputFileName = fileName
+                output.outputFileName = fileName
             }
         }
     }
